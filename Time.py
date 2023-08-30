@@ -67,6 +67,7 @@ class DraggableWindow(QWidget):
         self.show()
 
     def update_time(self):
+        # Change your timezone here
         china_tz = pytz.timezone('Asia/Shanghai')
         china_time = datetime.now(china_tz).strftime('%H:%M:%S')
         self.label.setText("CHINA        " + china_time)
