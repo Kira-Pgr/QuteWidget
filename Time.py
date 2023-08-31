@@ -5,11 +5,23 @@ from PyQt5.QtGui import QFont, QCursor
 from datetime import datetime
 import pytz
 
+app = QApplication(sys.argv)
+GLOBAL_TIMER = QTimer()
+REGISTERED_WIDGETS = []
+
+def update_all_widgets():
+    for widget in REGISTERED_WIDGETS:
+        widget.update_time()
+
+GLOBAL_TIMER.timeout.connect(update_all_widgets)
+GLOBAL_TIMER.start(1000)  # update every second
+
+# World Clock Widget Class
 class WorldClockWidget:
     def __init__(self, timezone='Asia/Shanghai', label_name='CHINA'):
         self.timezone = timezone
         self.label_name = label_name
-        self.app = QApplication(sys.argv)
+        #self.app = QApplication(sys.argv)
         self.window = self.DraggableWindow(timezone, label_name)
         self.window.label.setStyleSheet("color: white;")
         font = QFont("Comic Sans MS", 20)
@@ -22,12 +34,13 @@ class WorldClockWidget:
     
     def run(self):
         self.window.show()
-        sys.exit(self.app.exec_())
+        #sys.exit(self.app.exec_())
 
     class DraggableWindow(QWidget):
         def __init__(self,timezone, label_name):
             super().__init__()
             self.setWindowFlag(Qt.FramelessWindowHint)
+            self.setWindowFlag(Qt.Tool)
             self.setAttribute(Qt.WA_TranslucentBackground)
             self.label = QLabel("Hello, World!", self)
             self.timezone = timezone
@@ -35,6 +48,7 @@ class WorldClockWidget:
             # Initialize variables for mouse tracking
             self.dragging = False
             self.offset = QPoint()
+            self.update_time()
 
             # Timer for long press detection
             self.long_press_timer = QTimer(self)
@@ -43,13 +57,14 @@ class WorldClockWidget:
             self.long_pressed = False
 
             # Timer to update current time
-            self.time_update_timer = QTimer(self)
-            self.time_update_timer.setInterval(1000)
-            self.time_update_timer.timeout.connect(self.update_time)
-            self.time_update_timer.start()
+            REGISTERED_WIDGETS.append(self)
+            #self.time_update_timer = QTimer(self)
+            #self.time_update_timer.setInterval(1000)
+            #self.time_update_timer.timeout.connect(self.update_time)
+            #self.time_update_timer.start()
 
             # Initial time update
-            self.update_time()
+            #self.update_time()
 
         def mousePressEvent(self, event):
             if event.button() == Qt.LeftButton:
@@ -88,3 +103,6 @@ class WorldClockWidget:
 if __name__ == "__main__":
     widget = WorldClockWidget()  # Change timezone and label name as needed
     widget.run()
+    widget1 = WorldClockWidget(timezone="America/Chicago", label_name="MINNESOTA")
+    widget1.run()
+    sys.exit(app.exec_())
